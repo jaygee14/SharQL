@@ -1,12 +1,11 @@
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Lexer {
 
     private final TextManager textManager;
-    private final Map<String, Token.TokenTypes> keyWords;
+    private final HashMap<String, Token.TokenTypes> keyWords;
     int lineNumber = 0;
     int characterPosition = 0;
     List<Token> listOfTokens;
@@ -15,41 +14,40 @@ public class Lexer {
         this.textManager = new TextManager(word);
         keyWords = new HashMap<>();
 
-        keyWords.put("IDENTIFIER", Token.TokenTypes.IDENTIFIER);
-        keyWords.put("NUMBER", Token.TokenTypes.NUMBER);
-        keyWords.put("NEWLINE", Token.TokenTypes.NEWLINE);
-        keyWords.put("INDENT", Token.TokenTypes.INDENT);
-        keyWords.put("DEDENT", Token.TokenTypes.DEDENT);
-        keyWords.put("STRING", Token.TokenTypes.STRING);
-        keyWords.put("FROM", Token.TokenTypes.FROM);
-        keyWords.put("CREATE", Token.TokenTypes.CREATE);
-        keyWords.put("TABLE", Token.TokenTypes.TABLE);
-        keyWords.put("ENUM", Token.TokenTypes.ENUM);
-        keyWords.put("DECIMALNUMBER", Token.TokenTypes.DECIMALNUMBER);
-        keyWords.put("WHERE", Token.TokenTypes.WHERE);
-        keyWords.put("WHOLENUMBER", Token.TokenTypes.WHOLENUMBER);
-        keyWords.put("LIST", Token.TokenTypes.LIST);
-        keyWords.put("DELETE", Token.TokenTypes.DELETE);
-        keyWords.put("GREATERTHAN", Token.TokenTypes.GREATERTHAN);
-        keyWords.put("LESSTHAN", Token.TokenTypes.LESSTHAN);
-        keyWords.put("GREATERTHANEQUAL", Token.TokenTypes.GREATERTHANEQUAL);
-        keyWords.put("LESSTHANEQUAL", Token.TokenTypes.LESSTHANEQUAL);
+        keyWords.put("identifier", Token.TokenTypes.IDENTIFIER);
+        keyWords.put("number", Token.TokenTypes.NUMBER);
+        keyWords.put("\n", Token.TokenTypes.NEWLINE);
+        keyWords.put("indent", Token.TokenTypes.INDENT);
+        keyWords.put("dedent", Token.TokenTypes.DEDENT);
+        keyWords.put("string", Token.TokenTypes.STRING);
+        keyWords.put("from", Token.TokenTypes.FROM);
+        keyWords.put("create", Token.TokenTypes.CREATE);
+        keyWords.put("table", Token.TokenTypes.TABLE);
+        keyWords.put("enum", Token.TokenTypes.ENUM);
+        keyWords.put("decimalNumber", Token.TokenTypes.DECIMALNUMBER);
+        keyWords.put("where", Token.TokenTypes.WHERE);
+        keyWords.put("wholeNumber", Token.TokenTypes.WHOLENUMBER);
+        keyWords.put("list", Token.TokenTypes.LIST);
+        keyWords.put("delete", Token.TokenTypes.DELETE);
+        keyWords.put("greaterThan", Token.TokenTypes.GREATERTHAN);
+        keyWords.put("lessThan", Token.TokenTypes.LESSTHAN);
+        keyWords.put("greaterThanEqual", Token.TokenTypes.GREATERTHANEQUAL);
+        keyWords.put("lessThanEqual", Token.TokenTypes.LESSTHANEQUAL);
+        keyWords.put("insert", Token.TokenTypes.INSERT);
+        keyWords.put("return", Token.TokenTypes.RETURN);
+        keyWords.put("findOne", Token.TokenTypes.FINDONE);
+        keyWords.put("closeParen", Token.TokenTypes.CLOSEPAREN);
+        keyWords.put("openParen", Token.TokenTypes.OPENPAREN);
+        keyWords.put("equal", Token.TokenTypes.EQUAL);
+        keyWords.put("notEqual", Token.TokenTypes.NOTEQUAL);
+        keyWords.put("leftBrace", Token.TokenTypes.LEFTBRACE);
+        keyWords.put("rightBrace", Token.TokenTypes.RIGHTBRACE);
+        keyWords.put("comma", Token.TokenTypes.COMMA);
+        keyWords.put("dot", Token.TokenTypes.DOT);
 
     }
 
-   /* public Lexer lex() {
-        listOfTokens = new ArrayList<Token>();
 
-        while (!textManager.isEnd()) {
-            char c = textManager.peekCharacter();
-
-            if (Character.isLetter(c)) {
-                listOfTokens.add(this.textManager.readWord());
-            } else if (Character.isDigit(c)) {
-                listOfTokens.add(this.textManager.readNumber());
-            }
-        }
-    }*/
 
     public List<Token> lex() {
         listOfTokens = new ArrayList<Token>();
@@ -57,13 +55,30 @@ public class Lexer {
             char c = textManager.peekCharacter();
 
             if (Character.isLetter(c)) {
-                listOfTokens.add(new Token(Token.TokenTypes.IDENTIFIER, 0, 0, this.textManager.readWord()));
-            } else if (Character.isDigit(c)) {
-                listOfTokens.add(new Token(Token.TokenTypes.IDENTIFIER, 0, 0, this.textManager.readNumber()));
+                String word = textManager.readWord();
+                if (keyWords.containsKey(word)){
+                    listOfTokens.add( new Token(keyWords.get(word), lineNumber, characterPosition, word));
+                }
+                else{
+                    listOfTokens.add(new Token (Token.TokenTypes.IDENTIFIER, lineNumber, characterPosition, word));
+                }
+            }
+            else if (Character.isDigit(c)) {
+                String number = textManager.readNumber();
+                listOfTokens.add(new Token(Token.TokenTypes.NUMBER, lineNumber, characterPosition, number));
+            }
+            else if (c == '\n'){
+                textManager.getCharacter();
+                listOfTokens.add(new Token(Token.TokenTypes.NEWLINE, lineNumber, characterPosition, "\n"));
+            }
+            else {
+                textManager.getCharacter();
             }
         }
-        // lexer logic here
 
         return listOfTokens;
     }
+
+
+
 }

@@ -23,7 +23,7 @@ public class TextManager {
 
     public String readWord() {
         String word = "";
-        while (peekCharacter() != ' ' && !isEnd()) {
+        while (!isEnd() && !Character.isWhitespace(peekCharacter())) {
             word = word + getCharacter();
         }
         return word;
@@ -31,7 +31,7 @@ public class TextManager {
 
     public String readNumber() {
         String integer = "";
-        while (peekCharacter() != ' ' && Character.isDigit(peekCharacter()) && !isEnd()) {
+        while ( !isEnd() && !Character.isWhitespace(peekCharacter())) {
             integer = integer + getCharacter();
         }
         return integer;
