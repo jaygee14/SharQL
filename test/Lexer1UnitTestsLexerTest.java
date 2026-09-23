@@ -12,7 +12,7 @@ public class Lexer1UnitTestsLexerTest {
                 "list insert findOne delete\n" +
                 "from where return professor\n" +
                 "";
-        var tokens = new Lexer(code).lex();
+        var tokens = new Lexer(code).Lex();
         Assertions.assertEquals(Token.TokenTypes.IDENTIFIER, tokens.get(0).Type);
         Assertions.assertEquals("student", tokens.get(0).Value.orElseThrow());
         Assertions.assertEquals(Token.TokenTypes.IDENTIFIER, tokens.get(1).Type);

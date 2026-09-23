@@ -6,17 +6,18 @@ public class Lexer {
 
     private final TextManager textManager;
     private final HashMap<String, Token.TokenTypes> keyWords;
-    int lineNumber = 0;
-    int characterPosition = 0;
+    int lineNumber = 1;
+    int characterPosition = 1;
     List<Token> listOfTokens;
+    int indentLevel = 0;
 
-    public Lexer(String word) {
+    public Lexer(String word)  {
         this.textManager = new TextManager(word);
         keyWords = new HashMap<>();
 
         keyWords.put("identifier", Token.TokenTypes.IDENTIFIER);
         keyWords.put("number", Token.TokenTypes.NUMBER);
-        keyWords.put("\n", Token.TokenTypes.NEWLINE);
+        keyWords.put("newLine", Token.TokenTypes.NEWLINE);
         keyWords.put("indent", Token.TokenTypes.INDENT);
         keyWords.put("dedent", Token.TokenTypes.DEDENT);
         keyWords.put("string", Token.TokenTypes.STRING);
@@ -47,9 +48,28 @@ public class Lexer {
 
     }
 
+    private void increaseLine(){
+        lineNumber++;
+    }
+
+    private void increaseCharacterPosition(int n){
+        characterPosition += n;
+    }
+    private void resetPosition(){
+        characterPosition = 0;
+    }
+    private void resetLine(){lineNumber = 0;}
+    private void indent(){
+        indentLevel += 4;
+        listOfTokens.add(new Token (Token.TokenTypes.INDENT, lineNumber, characterPosition));
+    }
+    private void dedent(){
+        indentLevel -= 4;
+        listOfTokens.add(new Token (Token.TokenTypes.DEDENT, lineNumber, characterPosition));
+    }
 
 
-    public List<Token> lex() {
+    public List<Token> Lex() throws SyntaxErrorException {
         listOfTokens = new ArrayList<Token>();
         while (!textManager.isEnd()) {
             char c = textManager.peekCharacter();
@@ -58,24 +78,107 @@ public class Lexer {
                 String word = textManager.readWord();
                 if (keyWords.containsKey(word)){
                     listOfTokens.add( new Token(keyWords.get(word), lineNumber, characterPosition, word));
+                    increaseCharacterPosition(word.length());
                 }
                 else{
                     listOfTokens.add(new Token (Token.TokenTypes.IDENTIFIER, lineNumber, characterPosition, word));
+                    increaseCharacterPosition(word.length());
                 }
             }
             else if (Character.isDigit(c)) {
                 String number = textManager.readNumber();
                 listOfTokens.add(new Token(Token.TokenTypes.NUMBER, lineNumber, characterPosition, number));
+                increaseCharacterPosition(number.length());
             }
-            else if (c == '\n'){
+            else if (c == '\t'){
+                listOfTokens.add(new Token(Token.TokenTypes.INDENT, lineNumber, characterPosition));
+                increaseCharacterPosition(4);
                 textManager.getCharacter();
-                listOfTokens.add(new Token(Token.TokenTypes.NEWLINE, lineNumber, characterPosition, "\n"));
+
+            }
+
+            else if (c == '\n'){
+                listOfTokens.add(new Token(Token.TokenTypes.NEWLINE, lineNumber, characterPosition));
+                textManager.getCharacter();
+                resetPosition();
+                lineNumber++;
+            }
+
+            else if (c == ' '){
+                int spaceCount = 0;
+                while (!textManager.isEnd() && textManager.peekCharacter() == ' '){
+                    textManager.getCharacter();
+                    spaceCount+=1;
+                    characterPosition++;
+                }
+                if (spaceCount % 4 != 0 && spaceCount > 1){
+                    throw new SyntaxErrorException("Invalid Format", lineNumber, characterPosition);
+                }
+
+                else if (spaceCount > 1 && spaceCount > indentLevel){
+                    indent();
+                }
+                else if (spaceCount == 0 && spaceCount < indentLevel){
+                    dedent();
+                }
+            }
+
+            else if (c == '/'){
+                textManager.getCharacter();
+                characterPosition++;
+                if (!textManager.isEnd() && textManager.peekCharacter() == '*'){
+                    textManager.getCharacter();
+                    characterPosition++;
+                    while(!textManager.isEnd()){
+                        c = textManager.getCharacter();
+                        characterPosition++;
+
+                        if (c == '*' && !textManager.isEnd() && textManager.peekCharacter() == '/'){
+                            textManager.getCharacter();
+                            characterPosition++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            else if (c == '"'){
+                String str = "";
+                while(!textManager.isEnd() && textManager.peekCharacter() != '"'){
+                    str = str + textManager.getCharacter();
+                    characterPosition++;
+                }
+                if (textManager.isEnd()){
+                    throw new SyntaxErrorException("Unterminated String", lineNumber, characterPosition);
+                }
+                textManager.getCharacter();
+                characterPosition++;
+                listOfTokens.add(new Token(Token.TokenTypes.STRING, lineNumber, characterPosition, str));
+            }
+            else if (c == '('){
+                listOfTokens.add(new Token (Token.TokenTypes.OPENPAREN, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
+            }
+            else if (c == ')'){
+                listOfTokens.add(new Token (Token.TokenTypes.CLOSEPAREN, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
+            }
+            else if (c == ','){
+                listOfTokens.add(new Token (Token.TokenTypes.COMMA, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
             }
             else {
                 textManager.getCharacter();
+                characterPosition++;
             }
         }
 
+        /*for (int i = 0; i < listOfTokens.size(); i++){
+            System.out.println(i + ": " + listOfTokens.get(i).Type + " " + listOfTokens.get(i).Value);
+        }*/
         return listOfTokens;
     }
 

@@ -23,7 +23,7 @@ public class TextManager {
 
     public String readWord() {
         String word = "";
-        while (!isEnd() && !Character.isWhitespace(peekCharacter())) {
+        while (!isEnd() && !Character.isWhitespace(peekCharacter()) && peekCharacter() != '(' && peekCharacter() != ')' && peekCharacter() != ',' && peekCharacter() != '{' && peekCharacter() != '}') {
             word = word + getCharacter();
         }
         return word;
