@@ -6,8 +6,8 @@ public class Lexer {
 
     private final TextManager textManager;
     private final HashMap<String, Token.TokenTypes> keyWords;
-    int lineNumber = 1;
-    int characterPosition = 1;
+    public int lineNumber = 1;
+    public int characterPosition = 1;
     List<Token> listOfTokens;
     int indentLevel = 0;
 
@@ -53,12 +53,17 @@ public class Lexer {
     }
 
     private void increaseCharacterPosition(int n){
+
         characterPosition += n;
     }
     private void resetPosition(){
-        characterPosition = 0;
+
+        characterPosition = 1;
     }
-    private void resetLine(){lineNumber = 0;}
+    private void resetLine(){
+        lineNumber = 0;
+    }
+
     private void indent(){
         indentLevel += 4;
         listOfTokens.add(new Token (Token.TokenTypes.INDENT, lineNumber, characterPosition));
@@ -74,17 +79,37 @@ public class Lexer {
         while (!textManager.isEnd()) {
             char c = textManager.peekCharacter();
 
-            if (Character.isLetter(c)) {
+            if (Character.isLetter(c) && characterPosition - 1 < indentLevel) {
+                dedent();
                 String word = textManager.readWord();
+
                 if (keyWords.containsKey(word)){
                     listOfTokens.add( new Token(keyWords.get(word), lineNumber, characterPosition, word));
                     increaseCharacterPosition(word.length());
+                    //textManager.getCharacter();
+                }
+                else {
+                    listOfTokens.add(new Token(Token.TokenTypes.IDENTIFIER, lineNumber, characterPosition, word));
+                    increaseCharacterPosition(word.length());
+                    //textManager.getCharacter();
+                }
+            }
+
+            else if (Character.isLetter(c)) {
+                String word = textManager.readWord();
+
+                if (keyWords.containsKey(word)){
+                    listOfTokens.add( new Token(keyWords.get(word), lineNumber, characterPosition, word));
+                    increaseCharacterPosition(word.length());
+                    //textManager.getCharacter();
                 }
                 else{
                     listOfTokens.add(new Token (Token.TokenTypes.IDENTIFIER, lineNumber, characterPosition, word));
                     increaseCharacterPosition(word.length());
+                    //textManager.getCharacter();
                 }
             }
+
             else if (Character.isDigit(c)) {
                 String number = textManager.readNumber();
                 listOfTokens.add(new Token(Token.TokenTypes.NUMBER, lineNumber, characterPosition, number));
@@ -102,6 +127,11 @@ public class Lexer {
                 textManager.getCharacter();
                 resetPosition();
                 lineNumber++;
+            }
+
+            else if (c == '='){
+                listOfTokens.add(new Token(Token.TokenTypes.EQUAL, lineNumber, characterPosition));
+                textManager.getCharacter();
             }
 
             else if (c == ' '){
@@ -144,6 +174,9 @@ public class Lexer {
 
             else if (c == '"'){
                 String str = "";
+                textManager.getCharacter();
+                characterPosition++;
+
                 while(!textManager.isEnd() && textManager.peekCharacter() != '"'){
                     str = str + textManager.getCharacter();
                     characterPosition++;
@@ -153,7 +186,7 @@ public class Lexer {
                 }
                 textManager.getCharacter();
                 characterPosition++;
-                listOfTokens.add(new Token(Token.TokenTypes.STRING, lineNumber, characterPosition, str));
+                listOfTokens.add(new Token(Token.TokenTypes.STRINGLITERAL, lineNumber, characterPosition, str));
             }
             else if (c == '('){
                 listOfTokens.add(new Token (Token.TokenTypes.OPENPAREN, lineNumber, characterPosition));
@@ -170,18 +203,41 @@ public class Lexer {
                 textManager.getCharacter();
                 characterPosition++;
             }
+            else if (c == '<'){
+                listOfTokens.add(new Token (Token.TokenTypes.LESSTHAN, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
+            }
+            else if (c == '>'){
+                listOfTokens.add(new Token (Token.TokenTypes.GREATERTHAN, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
+            }
+
+            else if (c == '['){
+                listOfTokens.add(new Token (Token.TokenTypes.LEFTBRACE, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
+            }
+            else if (c == ']'){
+                listOfTokens.add(new Token (Token.TokenTypes.RIGHTBRACE, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
+            }
+            else if (c == '.'){
+                listOfTokens.add(new Token (Token.TokenTypes.DOT, lineNumber, characterPosition));
+                textManager.getCharacter();
+                characterPosition++;
+            }
             else {
                 textManager.getCharacter();
                 characterPosition++;
             }
         }
 
-        /*for (int i = 0; i < listOfTokens.size(); i++){
+        for (int i = 0; i < listOfTokens.size(); i++){
             System.out.println(i + ": " + listOfTokens.get(i).Type + " " + listOfTokens.get(i).Value);
-        }*/
+        }
         return listOfTokens;
     }
-
-
-
 }

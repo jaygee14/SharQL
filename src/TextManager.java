@@ -23,7 +23,10 @@ public class TextManager {
 
     public String readWord() {
         String word = "";
-        while (!isEnd() && !Character.isWhitespace(peekCharacter()) && peekCharacter() != '(' && peekCharacter() != ')' && peekCharacter() != ',' && peekCharacter() != '{' && peekCharacter() != '}') {
+        while (!isEnd() && !Character.isWhitespace(peekCharacter()) && peekCharacter() != '('
+                && peekCharacter() != ')' && peekCharacter() != ',' && peekCharacter() != '{'
+                && peekCharacter() != '}' && peekCharacter() != '<' && peekCharacter() != '>'
+                && peekCharacter() != '=' && peekCharacter() != ',' && peekCharacter() != '.') {
             word = word + getCharacter();
         }
         return word;
@@ -31,7 +34,7 @@ public class TextManager {
 
     public String readNumber() {
         String integer = "";
-        while ( !isEnd() && !Character.isWhitespace(peekCharacter())) {
+        while ( !isEnd() && !Character.isWhitespace(peekCharacter()) && peekCharacter() != ',' && peekCharacter() != ')') {
             integer = integer + getCharacter();
         }
         return integer;
